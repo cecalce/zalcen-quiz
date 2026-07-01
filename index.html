@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Zalcen</title>
+
+<!-- ============================================================
+     ROTEADOR DE IDIOMA — raiz do domínio (quiz.zalcen.com/)
+     Não mostra conteúdo. Lê navigator.language e redireciona
+     pra hub do idioma detectado (/pt/, /de/, /en/, /fr/...).
+
+     Fluxo:
+       quiz.zalcen.com/  →  detecta idioma  →  redireciona pra /xx/
+       /xx/              →  hub de quizzes daquele idioma
+       /xx/tema/         →  quiz específico
+
+     Como habilitar um idioma novo:
+       1. Criar /xx/index.html (hub) e /xx/algum-quiz/index.html
+       2. Adicionar 'xx' no array SUPPORTED abaixo
+     ============================================================ -->
+
+<script>
+  (function () {
+    // Idiomas cuja hub já está publicada.
+    // Adicione conforme for traduzindo.
+    var SUPPORTED = ['pt']; // futuro: ['pt','en','de','fr','es','it','nl']
+    var FALLBACK  = 'pt';
+
+    var raw = (navigator.language || navigator.userLanguage || '').toLowerCase();
+    var short = raw.slice(0, 2);
+    var target = SUPPORTED.indexOf(short) !== -1 ? short : FALLBACK;
+
+    // Preserva query string (importante pra UTM do tráfego pago)
+    var qs = window.location.search || '';
+    window.location.replace('/' + target + '/' + qs);
+  })();
+</script>
+
+<style>
+  body {
+    margin: 0;
+    background: #16181d;
+    color: #ece6da;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    display: grid;
+    place-items: center;
+    min-height: 100vh;
+    text-align: center;
+  }
+  .brand {
+    font-family: 'Times New Roman', Georgia, serif;
+    font-size: 22px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    opacity: 0.6;
+  }
+  .brand .dot { color: #c0894d; }
+  p { font-size: 13px; opacity: 0.5; margin-top: 12px; }
+  a { color: #c0894d; text-decoration: none; }
+</style>
+</head>
+<body>
+  <!-- Fallback visível se o JS demorar ou estiver desabilitado -->
+  <div>
+    <div class="brand">ZALCEN<span class="dot">.</span></div>
+    <p>Carregando…</p>
+    <p><a href="/pt/">Entrar em português</a></p>
+  </div>
+</body>
+</html>
