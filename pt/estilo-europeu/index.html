@@ -7,14 +7,13 @@
 
 <!-- ============================================================
      GTM / dataLayer — inicialização
-     Cada etapa do quiz dá um dataLayer.push (ver função track()).
+     Cada etapa dispara um dataLayer.push (função track()).
      Quando você criar o container GTM, é só ler estes eventos.
      ============================================================ -->
 <script>
   window.dataLayer = window.dataLayer || [];
   function track(eventName, payload) {
     window.dataLayer.push(Object.assign({ event: eventName }, payload || {}));
-    // Espelho no console pra você ver os eventos disparando enquanto testa:
     console.log('[dataLayer]', eventName, payload || {});
   }
 </script>
@@ -22,24 +21,24 @@
 <style>
   /* ============================================================
      TOKENS DE DESIGN — identidade Zalcen
-     Paleta: grafite profundo + osso quente + um latão sóbrio
-     (premium acessível, masculino europeu — sem cara de template)
+     Paleta: grafite profundo + osso quente + latão sóbrio
      ============================================================ */
   :root {
-    --ink:        #16181d;   /* grafite quase preto — fundo principal */
-    --ink-soft:   #1f222a;   /* cartões sobre o fundo */
-    --ink-line:   #2c3038;   /* linhas / bordas discretas */
-    --bone:       #ece6da;   /* osso quente — texto principal */
-    --bone-dim:   #9a958c;   /* texto secundário */
-    --brass:      #c0894d;   /* latão — acento único, usado com restrição */
+    --ink:        #16181d;
+    --ink-soft:   #1f222a;
+    --ink-line:   #2c3038;
+    --bone:       #ece6da;
+    --bone-dim:   #9a958c;
+    --brass:      #c0894d;
     --brass-soft: #d8a86a;
-    --ok:         #7fae86;   /* validação */
-    --radius:     2px;       /* cantos quase retos — sóbrio, não "app fofo" */
+    --ok:         #7fae86;
+    --danger:     #d98a7c;
+    --radius:     2px;
     --maxw:       620px;
+    --maxw-wide:  760px;    /* p/ tela do kit e upgrades, precisa mais respiro */
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
-
   html, body { height: 100%; }
 
   body {
@@ -53,16 +52,13 @@
     min-height: 100%;
   }
 
-  /* ---- Tipografia de display: serifada estreita pro acento editorial ---- */
   .display {
     font-family: 'Times New Roman', Georgia, serif;
     font-weight: 400;
     letter-spacing: -0.01em;
   }
 
-  /* ============================================================
-     BARRA DE PROGRESSO
-     ============================================================ */
+  /* ============================================================ PROGRESSO ============================================================ */
   .progress-wrap {
     position: sticky;
     top: 0;
@@ -75,7 +71,7 @@
     display: flex;
     justify-content: space-between;
     align-items: baseline;
-    max-width: var(--maxw);
+    max-width: var(--maxw-wide);
     margin: 0 auto 10px;
   }
   .brand {
@@ -93,7 +89,7 @@
     text-transform: uppercase;
   }
   .progress-track {
-    max-width: var(--maxw);
+    max-width: var(--maxw-wide);
     margin: 0 auto;
     height: 2px;
     background: var(--ink-line);
@@ -106,9 +102,14 @@
     transition: width 0.5s cubic-bezier(.22,.61,.36,1);
   }
 
-  /* ============================================================
-     ÁREA PRINCIPAL
-     ============================================================ */
+  /* Modo "final" — quando entra em kit/upgrades a barra some com fade */
+  .progress-wrap.hidden {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.5s ease;
+  }
+
+  /* ============================================================ ÁREA PRINCIPAL ============================================================ */
   main {
     flex: 1;
     display: flex;
@@ -116,12 +117,9 @@
     justify-content: center;
     padding: 40px 24px 80px;
   }
-  .stage {
-    width: 100%;
-    max-width: var(--maxw);
-  }
+  .stage { width: 100%; max-width: var(--maxw); }
+  .stage.wide { max-width: var(--maxw-wide); }
 
-  /* ---- transição entre telas ---- */
   .screen { display: none; }
   .screen.active {
     display: block;
@@ -132,9 +130,7 @@
     to   { opacity: 1; transform: translateY(0); }
   }
 
-  /* ============================================================
-     TELA DE ABERTURA
-     ============================================================ */
+  /* ============================================================ INTRO ============================================================ */
   .intro-eyebrow {
     font-size: 12px;
     letter-spacing: 0.22em;
@@ -147,10 +143,7 @@
     line-height: 1.08;
     margin-bottom: 20px;
   }
-  .intro-title em {
-    font-style: italic;
-    color: var(--brass-soft);
-  }
+  .intro-title em { font-style: italic; color: var(--brass-soft); }
   .intro-sub {
     font-size: 17px;
     color: var(--bone-dim);
@@ -165,9 +158,7 @@
   }
   .intro-meta strong { color: var(--bone); font-weight: 600; }
 
-  /* ============================================================
-     PERGUNTAS
-     ============================================================ */
+  /* ============================================================ PERGUNTAS ============================================================ */
   .q-eyebrow {
     font-size: 12px;
     letter-spacing: 0.18em;
@@ -180,17 +171,14 @@
     line-height: 1.18;
     margin-bottom: 28px;
   }
-
-  /* grade de opções com imagem */
   .options {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 14px;
   }
   @media (max-width: 480px) {
-    .options { grid-template-columns: 1fr 1fr; gap: 10px; }
+    .options { gap: 10px; }
   }
-
   .option {
     position: relative;
     border: 1px solid var(--ink-line);
@@ -217,9 +205,6 @@
     display: grid; place-items: center;
     font-size: 13px; font-weight: 700;
   }
-
-  /* PLACEHOLDER DE IMAGEM — troque por <img> quando tiver os assets.
-     Cada .option-img tem data-slot indicando qual foto entra ali. */
   .option-img {
     aspect-ratio: 4 / 5;
     background:
@@ -248,8 +233,6 @@
     color: var(--bone-dim);
     margin-top: 3px;
   }
-
-  /* microcopy de validação */
   .validation {
     margin-top: 18px;
     min-height: 20px;
@@ -261,9 +244,7 @@
   }
   .validation.show { opacity: 1; transform: translateY(0); }
 
-  /* ============================================================
-     CAPTURA NOME + EMAIL
-     ============================================================ */
+  /* ============================================================ CAPTURA ============================================================ */
   .capture-eyebrow {
     font-size: 12px;
     letter-spacing: 0.18em;
@@ -302,19 +283,15 @@
     font-family: inherit;
     transition: border-color 0.2s;
   }
-  .field input:focus {
-    outline: none;
-    border-color: var(--brass);
-  }
+  .field input:focus { outline: none; border-color: var(--brass); }
   .field input::placeholder { color: #5c6069; }
   .field-error {
     font-size: 13px;
-    color: #d98a7c;
+    color: var(--danger);
     margin-top: 6px;
     display: none;
   }
   .field-error.show { display: block; }
-
   .privacy {
     font-size: 12px;
     color: var(--bone-dim);
@@ -322,9 +299,7 @@
     line-height: 1.5;
   }
 
-  /* ============================================================
-     BOTÃO PRIMÁRIO
-     ============================================================ */
+  /* ============================================================ BOTÕES ============================================================ */
   .btn {
     display: inline-flex;
     align-items: center;
@@ -348,9 +323,31 @@
   .btn .arr { transition: transform 0.2s; }
   .btn:hover .arr { transform: translateX(3px); }
 
-  /* ============================================================
-     TELA DE RESULTADO
-     ============================================================ */
+  .btn-block { width: 100%; justify-content: center; padding: 18px 24px; font-size: 16px; }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--bone-dim);
+    border: 1px solid var(--ink-line);
+    text-decoration: none;
+  }
+  .btn-ghost:hover { color: var(--bone); border-color: var(--bone-dim); background: transparent; }
+
+  .link-quiet {
+    display: inline-block;
+    margin-top: 20px;
+    font-size: 13px;
+    color: var(--bone-dim);
+    text-decoration: underline;
+    text-decoration-color: var(--ink-line);
+    cursor: pointer;
+    background: none;
+    border: none;
+    font-family: inherit;
+  }
+  .link-quiet:hover { color: var(--bone); }
+
+  /* ============================================================ TELA DE RESULTADO (perfil + kit herói) ============================================================ */
   .result-eyebrow {
     font-size: 12px;
     letter-spacing: 0.2em;
@@ -369,46 +366,332 @@
     margin-bottom: 22px;
   }
   .result-profile em { font-style: italic; color: var(--brass-soft); }
-  .result-desc {
-    font-size: 17px;
-    color: var(--bone-dim);
-    max-width: 480px;
-    margin-bottom: 30px;
+
+  /* Narrativa em 4 blocos */
+  .narrative {
+    margin: 30px 0 40px;
+    display: grid;
+    gap: 24px;
   }
-  .result-deliverable {
+  .narr-block h3 {
+    font-family: 'Times New Roman', Georgia, serif;
+    font-size: 20px;
+    font-weight: 400;
+    margin-bottom: 8px;
+    color: var(--bone);
+  }
+  .narr-block p {
+    font-size: 15px;
+    color: var(--bone-dim);
+    line-height: 1.6;
+  }
+
+  /* Kit herói */
+  .kit-hero {
     border: 1px solid var(--ink-line);
     border-radius: var(--radius);
     background: var(--ink-soft);
-    padding: 22px 24px;
-    margin-bottom: 30px;
+    padding: 28px;
+    margin-bottom: 22px;
+    transition: border-color 0.3s;
   }
-  .result-deliverable h3 {
+  .kit-hero.accepted { border-color: var(--brass); }
+  .kit-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 22px;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+  .kit-heading h2 {
     font-family: 'Times New Roman', Georgia, serif;
-    font-size: 19px;
-    margin-bottom: 8px;
+    font-size: 26px;
     font-weight: 400;
+    color: var(--bone);
   }
-  .result-deliverable p {
+  .kit-badge {
+    display: inline-block;
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    color: var(--brass);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  .kit-items {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  @media (max-width: 480px) {
+    .kit-items { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  }
+  .kit-item {
+    background: var(--ink);
+    border-radius: var(--radius);
+    padding: 8px;
+    text-align: center;
+  }
+  .kit-item .thumb {
+    aspect-ratio: 1;
+    background:
+      repeating-linear-gradient(
+        45deg,
+        #23262e, #23262e 10px,
+        #262932 10px, #262932 20px
+      );
+    border-radius: var(--radius);
+    display: grid;
+    place-items: center;
+    color: #565b66;
+    font-size: 10px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+    padding: 4px;
+  }
+  .kit-item .name {
+    font-size: 12px;
+    color: var(--bone-dim);
+    line-height: 1.3;
+  }
+
+  .kit-price {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding-top: 20px;
+    border-top: 1px solid var(--ink-line);
+    margin-bottom: 18px;
+  }
+  .kit-price .label {
+    font-size: 13px;
+    color: var(--bone-dim);
+    letter-spacing: 0.04em;
+  }
+  .kit-price .amounts { text-align: right; }
+  .kit-price .old {
+    font-size: 14px;
+    color: var(--bone-dim);
+    text-decoration: line-through;
+    margin-right: 10px;
+  }
+  .kit-price .new {
+    font-size: 22px;
+    color: var(--bone);
+    font-weight: 600;
+  }
+  .kit-price .save {
+    display: block;
+    font-size: 11px;
+    color: var(--brass-soft);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-top: 4px;
+  }
+
+  /* ============================================================ UPGRADES (expansíveis) ============================================================ */
+  .upgrades {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.6s cubic-bezier(.22,.61,.36,1), opacity 0.4s ease;
+    opacity: 0;
+    margin-bottom: 0;
+  }
+  .upgrades.open {
+    max-height: 1400px;   /* alto o suficiente pra qualquer conteúdo */
+    opacity: 1;
+    margin-bottom: 22px;
+  }
+
+  .upgrades-header {
+    text-align: center;
+    padding: 20px 0 8px;
+    position: relative;
+  }
+  .upgrades-header::before,
+  .upgrades-header::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    width: 40px;
+    height: 1px;
+    background: var(--ink-line);
+  }
+  .upgrades-header::before { left: 20%; }
+  .upgrades-header::after { right: 20%; }
+  .upgrades-header .tag {
+    display: inline-block;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--brass);
+    background: var(--ink);
+    padding: 0 14px;
+    position: relative;
+    z-index: 1;
+  }
+  .upgrades-title {
+    font-family: 'Times New Roman', Georgia, serif;
+    font-size: 22px;
+    text-align: center;
+    color: var(--bone);
+    margin: 12px 0 6px;
+  }
+  .upgrades-sub {
+    text-align: center;
+    font-size: 13px;
+    color: var(--bone-dim);
+    margin-bottom: 24px;
+  }
+
+  .upgrade-card {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px;
+    background: var(--ink-soft);
+    border: 1px solid var(--ink-line);
+    border-radius: var(--radius);
+    margin-bottom: 12px;
+    cursor: pointer;
+    transition: border-color 0.2s;
+    position: relative;
+  }
+  .upgrade-card:hover { border-color: var(--bone-dim); }
+  .upgrade-card.selected { border-color: var(--brass); background: rgba(192,137,77,0.05); }
+
+  .upgrade-card .thumb {
+    width: 68px;
+    height: 68px;
+    flex-shrink: 0;
+    background:
+      repeating-linear-gradient(
+        45deg,
+        #23262e, #23262e 8px,
+        #262932 8px, #262932 16px
+      );
+    border-radius: var(--radius);
+    display: grid;
+    place-items: center;
+    color: #565b66;
+    font-size: 9px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    text-align: center;
+    padding: 4px;
+  }
+  .upgrade-info {
+    flex: 1;
+    min-width: 0;
+  }
+  .upgrade-info .name {
+    font-size: 15px;
+    color: var(--bone);
+    margin-bottom: 4px;
+  }
+  .upgrade-info .discount {
+    display: inline-block;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    color: var(--brass);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+    background: rgba(192,137,77,0.1);
+    padding: 2px 8px;
+    border-radius: 2px;
+  }
+  .upgrade-info .price {
     font-size: 14px;
     color: var(--bone-dim);
   }
+  .upgrade-info .price .old {
+    text-decoration: line-through;
+    margin-right: 8px;
+  }
+  .upgrade-info .price .new {
+    color: var(--bone);
+    font-weight: 600;
+  }
 
-  /* timer real de sessão (expira uma vez, não reinicia) */
-  .timer {
+  .upgrade-check {
+    width: 24px;
+    height: 24px;
+    border: 1.5px solid var(--ink-line);
+    border-radius: 3px;
+    flex-shrink: 0;
+    display: grid;
+    place-items: center;
+    transition: all 0.15s;
+    background: var(--ink);
+  }
+  .upgrade-card.selected .upgrade-check {
+    background: var(--brass);
+    border-color: var(--brass);
+  }
+  .upgrade-card.selected .upgrade-check::after {
+    content: '✓';
+    color: var(--ink);
+    font-size: 14px;
+    font-weight: 700;
+  }
+
+  /* Total dinâmico */
+  .cart-total {
+    background: var(--ink-soft);
+    border: 1px solid var(--ink-line);
+    border-radius: var(--radius);
+    padding: 20px 24px;
+    margin: 8px 0 22px;
+  }
+  .cart-total-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    font-size: 14px;
+    color: var(--bone-dim);
+    padding: 6px 0;
+  }
+  .cart-total-row.big {
+    padding-top: 14px;
+    margin-top: 8px;
+    border-top: 1px solid var(--ink-line);
+    font-size: 16px;
+    color: var(--bone);
+  }
+  .cart-total-row.big .value {
+    font-size: 22px;
+    font-weight: 600;
+  }
+  .cart-total-row .value {
+    color: var(--bone);
+    font-variant-numeric: tabular-nums;
+  }
+  .cart-total-row .save {
+    font-size: 11px;
+    color: var(--brass-soft);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  /* Timer */
+  .timer-wrap {
     display: inline-flex;
     align-items: center;
     gap: 8px;
     font-size: 13px;
     color: var(--bone-dim);
-    margin-bottom: 24px;
+    margin: 8px 0 22px;
   }
-  .timer .clock {
+  .timer-wrap .clock {
     font-variant-numeric: tabular-nums;
     color: var(--brass-soft);
     font-weight: 600;
   }
-  .timer.expired { color: #d98a7c; }
-  .timer.expired .clock { color: #d98a7c; }
+  .timer-wrap.expired { color: var(--danger); }
+  .timer-wrap.expired .clock { color: var(--danger); }
 
   .footnote {
     text-align: center;
@@ -422,7 +705,7 @@
 <body>
 
   <!-- ===================== PROGRESSO ===================== -->
-  <div class="progress-wrap">
+  <div class="progress-wrap" id="progressWrap">
     <div class="progress-top">
       <span class="brand">ZALCEN<span class="dot">.</span></span>
       <span class="step-label" id="stepLabel">Comece aqui</span>
@@ -431,7 +714,7 @@
   </div>
 
   <main>
-    <div class="stage">
+    <div class="stage" id="stage">
 
       <!-- ===================== INTRO ===================== -->
       <section class="screen active" id="screen-intro">
@@ -441,7 +724,7 @@
         </h1>
         <p class="intro-sub">
           Seis perguntas rápidas pra descobrir o perfil que combina com você —
-          e um guia de estilo feito sob medida pro seu resultado.
+          e um kit sob medida pro seu resultado.
         </p>
         <button class="btn" id="startBtn">
           Descobrir meu estilo <span class="arr">→</span>
@@ -464,7 +747,7 @@
         <p class="capture-eyebrow">Quase lá</p>
         <h2 class="display capture-title">Seu resultado está pronto.</h2>
         <p class="capture-sub">
-          Pra onde enviamos seu perfil de estilo e o guia completo?
+          Pra onde enviamos o guia completo do seu perfil?
           Sem spam — só o que importa pro seu estilo.
         </p>
 
@@ -489,28 +772,82 @@
         </p>
       </section>
 
-      <!-- ===================== RESULTADO ===================== -->
+      <!-- ===================== RESULTADO + KIT + UPGRADES (tela única) ===================== -->
       <section class="screen" id="screen-result">
         <p class="result-eyebrow">Seu perfil de estilo</p>
         <p class="result-name" id="resultName">—</p>
         <h2 class="display result-profile" id="resultProfile">—</h2>
-        <p class="result-desc" id="resultDesc">—</p>
 
-        <div class="timer" id="timer">
-          <span>⏳ Oferta de boas-vindas reservada por</span>
+        <!-- Narrativa: descrição + problema + solução -->
+        <div class="narrative" id="narrative"></div>
+
+        <div class="timer-wrap" id="timer">
+          <span>⏳ Oferta reservada por</span>
           <span class="clock" id="clock">10:00</span>
         </div>
 
-        <div class="result-deliverable">
-          <h3 id="deliverableTitle">Seu Guia de Estilo Zalcen</h3>
-          <p id="deliverableText">
-            Enviamos pro seu e-mail o guia completo do seu perfil, com as peças
-            que combinam com você e como combiná-las.
-          </p>
+        <!-- KIT HERÓI -->
+        <div class="kit-hero" id="kitHero">
+          <div class="kit-heading">
+            <div>
+              <span class="kit-badge" id="kitBadge">Kit recomendado</span>
+              <h2 id="kitName">—</h2>
+            </div>
+          </div>
+
+          <div class="kit-items" id="kitItems"></div>
+
+          <div class="kit-price">
+            <span class="label">Valor do kit</span>
+            <div class="amounts">
+              <span class="old" id="kitOld">—</span>
+              <span class="new" id="kitNew">—</span>
+              <span class="save" id="kitSave">—</span>
+            </div>
+          </div>
+
+          <button class="btn btn-block" id="acceptKitBtn">
+            Quero esse kit <span class="arr">→</span>
+          </button>
         </div>
 
-        <button class="btn" id="shopBtn">
-          Ver as peças do meu estilo <span class="arr">→</span>
+        <!-- UPGRADES (expandem só após aceitar o kit) -->
+        <div class="upgrades" id="upgrades">
+          <div class="upgrades-header">
+            <span class="tag">Adicione ao seu kit</span>
+          </div>
+          <h3 class="upgrades-title">Complementos com desconto exclusivo</h3>
+          <p class="upgrades-sub">Só disponíveis junto do kit — não voltam a esse preço.</p>
+
+          <div id="upgradesList"></div>
+
+          <div class="cart-total" id="cartTotal">
+            <div class="cart-total-row">
+              <span>Kit</span>
+              <span class="value" id="totalKit">—</span>
+            </div>
+            <div class="cart-total-row" id="totalUpgradesRow" style="display:none">
+              <span>Complementos</span>
+              <span class="value" id="totalUpgrades">—</span>
+            </div>
+            <div class="cart-total-row big">
+              <span>Total</span>
+              <span class="value" id="totalFinal">—</span>
+            </div>
+            <div class="cart-total-row" id="totalSavingsRow">
+              <span class="save" id="totalSavingsLabel">Você economiza</span>
+              <span class="save" id="totalSavings">—</span>
+            </div>
+          </div>
+
+          <button class="btn btn-block" id="checkoutBtn">
+            Finalizar meu kit <span class="arr">→</span>
+          </button>
+        </div>
+
+        <!-- Saída discreta pra quem não quer o kit -->
+        <button class="link-quiet" id="exploreBtn">
+          Prefiro explorar a coleção do meu estilo
         </button>
       </section>
 
@@ -521,87 +858,193 @@
 
 <script>
 /* ================================================================
-   DADOS DO QUIZ
-   Cada opção tem um "profile": 'urbano' | 'classico' | 'casual'.
-   Pra trocar o placeholder por foto real: dentro de buildOption(),
-   substitua a <div class="option-img"> por
-   <img src="URL_DA_FOTO" alt="..."> usando o data-slot como referência.
+   PERFIS
+   Cada perfil traz descrição, narrativa (blocos), kit e upgrades.
+   PLACEHOLDERS pra você trocar depois:
+     - variantId    : o Variant ID (número longo) do produto no Shopify
+     - collectionUrl: URL da coleção que abre se o lead recusar o kit
    ================================================================ */
   const PROFILES = {
     urbano: {
       name: 'Urbano Europeu',
-      desc: 'Linhas limpas, paleta escura, peças modernas que funcionam da rua à noite. Você gosta de discrição com atitude.',
+      collectionUrl: 'https://zalcen.com/collections/urbano', // TROQUE se a coleção tiver outro handle
+      narrative: {
+        essence:  'Linhas limpas, paleta escura e peças modernas que funcionam da rua à noite. Você não grita — impõe presença com discrição.',
+        problem:  'O erro comum de quem tem esse estilo é comprar peças soltas em lojas diferentes, e nunca conseguir montar um look que fecha. O relógio combina, mas o cinto destoa. O tênis é bom, mas fica sozinho.',
+        solution: 'Selecionamos 3 peças que já foram pensadas pra funcionar juntas — mesmo tom, mesma linguagem visual, mesma personalidade. Você recebe o look inteiro, não peças avulsas.',
+      },
+      kit: {
+        badge: 'Kit Urbano',
+        title: 'O look Urbano completo',
+        items: [
+          { name: 'Relógio urbano preto',   thumb: 'IMG relógio urbano',     variantId: 'PLACEHOLDER_URBANO_KIT_1' },
+          { name: 'Cinto minimalista preto',thumb: 'IMG cinto urbano',       variantId: 'PLACEHOLDER_URBANO_KIT_2' },
+          { name: 'Óculos sol grafite',     thumb: 'IMG óculos urbano',      variantId: 'PLACEHOLDER_URBANO_KIT_3' },
+        ],
+        priceFull:   150,   // soma dos preços cheios (€)
+        priceKit:    128,   // preço já com desconto do kit (€) — ajuste conforme sua regra Shopify
+        currency:    '€',
+      },
+      upgrades: [
+        {
+          name:      'Carteira slim couro grafite',
+          thumb:     'IMG carteira urbano',
+          variantId: 'PLACEHOLDER_URBANO_UPG_1',
+          priceFull: 45,
+          priceUpg:  32,   // ~28% off
+        },
+        {
+          name:      'Boné estruturado preto',
+          thumb:     'IMG boné urbano',
+          variantId: 'PLACEHOLDER_URBANO_UPG_2',
+          priceFull: 35,
+          priceUpg:  25,   // ~28% off
+        },
+      ],
     },
+
     classico: {
       name: 'Clássico Refinado',
-      desc: 'Elegância atemporal: aço, couro e neutros bem resolvidos. Você valoriza peças que nunca saem de moda.',
+      collectionUrl: 'https://zalcen.com/collections/classico',
+      narrative: {
+        essence:  'Aço, couro e neutros bem resolvidos. Você valoriza peças que atravessam décadas sem sair de moda — e sabe que elegância verdadeira nunca é sobre o novo, é sobre o certo.',
+        problem:  'Quem tem esse estilo costuma cair em duas armadilhas: gastar demais em uma peça só (e não ter o resto do look à altura), ou comprar barato demais em várias peças (e perder a coerência).',
+        solution: 'Curamos 3 peças que resolvem o look clássico completo, sem excessos e sem cortes de qualidade. Peças pra usar por anos, não por temporada.',
+      },
+      kit: {
+        badge: 'Kit Clássico',
+        title: 'O essencial atemporal',
+        items: [
+          { name: 'Relógio aço com couro',  thumb: 'IMG relógio clássico',   variantId: 'PLACEHOLDER_CLASSICO_KIT_1' },
+          { name: 'Cinto couro marinho',    thumb: 'IMG cinto clássico',     variantId: 'PLACEHOLDER_CLASSICO_KIT_2' },
+          { name: 'Sapato derby couro',     thumb: 'IMG sapato clássico',    variantId: 'PLACEHOLDER_CLASSICO_KIT_3' },
+        ],
+        priceFull: 220,
+        priceKit:  188,
+        currency:  '€',
+      },
+      upgrades: [
+        {
+          name:      'Carteira couro marrom',
+          thumb:     'IMG carteira clássico',
+          variantId: 'PLACEHOLDER_CLASSICO_UPG_1',
+          priceFull: 55,
+          priceUpg:  39,
+        },
+        {
+          name:      'Óculos armação metal',
+          thumb:     'IMG óculos clássico',
+          variantId: 'PLACEHOLDER_CLASSICO_UPG_2',
+          priceFull: 60,
+          priceUpg:  42,
+        },
+      ],
     },
+
     casual: {
       name: 'Casual Sofisticado',
-      desc: 'Conforto sem abrir mão do estilo. Tons terrosos, peças leves e versáteis pro dia a dia bem vestido.',
+      collectionUrl: 'https://zalcen.com/collections/casual',
+      narrative: {
+        essence:  'Tons terrosos, peças leves e versáteis. Você entende que o segredo do bem-vestir não é esforço, é curadoria — poucas peças certas, combinadas com naturalidade.',
+        problem:  'O erro clássico de quem gosta desse estilo é confundir "casual" com "qualquer coisa". O resultado é um guarda-roupa cheio, mas nunca uma combinação que sai fácil de manhã.',
+        solution: 'Selecionamos 3 peças que já resolvem 90% dos seus dias — casual de verdade, sem descuidado. Você tira do armário e sabe que combina.',
+      },
+      kit: {
+        badge: 'Kit Casual',
+        title: 'O básico bem resolvido',
+        items: [
+          { name: 'Relógio pulseira bege',  thumb: 'IMG relógio casual',     variantId: 'PLACEHOLDER_CASUAL_KIT_1' },
+          { name: 'Loafer couro caramelo',  thumb: 'IMG loafer casual',      variantId: 'PLACEHOLDER_CASUAL_KIT_2' },
+          { name: 'Óculos tartaruga',       thumb: 'IMG óculos casual',      variantId: 'PLACEHOLDER_CASUAL_KIT_3' },
+        ],
+        priceFull: 180,
+        priceKit:  155,
+        currency:  '€',
+      },
+      upgrades: [
+        {
+          name:      'Boina lã caramelo',
+          thumb:     'IMG boina casual',
+          variantId: 'PLACEHOLDER_CASUAL_UPG_1',
+          priceFull: 40,
+          priceUpg:  28,
+        },
+        {
+          name:      'Cinto trançado couro',
+          thumb:     'IMG cinto casual',
+          variantId: 'PLACEHOLDER_CASUAL_UPG_2',
+          priceFull: 45,
+          priceUpg:  32,
+        },
+      ],
     },
   };
 
-  // Microcopy de validação — varia por perfil escolhido, dá sensação de "leitura"
+  /* ================================================================
+     MICROCOPY DE VALIDAÇÃO (por perfil selecionado a cada resposta)
+     ================================================================ */
   const VALIDATION = {
     urbano:   ['Boa — bem urbano.', 'Esse tem cara de cidade.', 'Escolha moderna, anotado.'],
     classico: ['Clássico. Bom gosto.', 'Atemporal — gostei.', 'Elegante, anotado.'],
     casual:   ['Casual na medida.', 'Leve e bem resolvido.', 'Versátil — anotado.'],
   };
 
+  /* ================================================================
+     PERGUNTAS DO QUIZ (6, todas com placeholders de imagem)
+     ================================================================ */
   const QUESTIONS = [
     {
       q: 'Onde você mais se imagina bem vestido?',
       options: [
-        { label: 'Cidade à noite',    tiny: 'bares, rooftops, eventos', profile: 'urbano',   slot: 'q1-urbano' },
-        { label: 'Jantar elegante',   tiny: 'restaurante, compromisso', profile: 'classico', slot: 'q1-classico' },
-        { label: 'Fim de semana leve',tiny: 'passeio, café, day off',   profile: 'casual',   slot: 'q1-casual' },
-        { label: 'Trabalho-evento',   tiny: 'do escritório pro happy hour', profile: 'urbano', slot: 'q1-urbano2' },
+        { label: 'Cidade à noite',     tiny: 'bares, rooftops, eventos',       profile: 'urbano',   slot: 'q1-urbano' },
+        { label: 'Jantar elegante',    tiny: 'restaurante, compromisso',       profile: 'classico', slot: 'q1-classico' },
+        { label: 'Fim de semana leve', tiny: 'passeio, café, day off',         profile: 'casual',   slot: 'q1-casual' },
+        { label: 'Trabalho-evento',    tiny: 'do escritório pro happy hour',   profile: 'urbano',   slot: 'q1-urbano2' },
       ],
     },
     {
       q: 'Qual paleta te atrai mais?',
       options: [
-        { label: 'Preto & grafite',   tiny: 'monocromático', profile: 'urbano',   slot: 'q2-urbano' },
-        { label: 'Azul-marinho & aço',tiny: 'neutros sóbrios', profile: 'classico', slot: 'q2-classico' },
-        { label: 'Bege & terrosos',   tiny: 'tons quentes',  profile: 'casual',   slot: 'q2-casual' },
-        { label: 'Marrom & couro',    tiny: 'clássico quente', profile: 'classico', slot: 'q2-classico2' },
+        { label: 'Preto & grafite',    tiny: 'monocromático',                  profile: 'urbano',   slot: 'q2-urbano' },
+        { label: 'Azul-marinho & aço', tiny: 'neutros sóbrios',                profile: 'classico', slot: 'q2-classico' },
+        { label: 'Bege & terrosos',    tiny: 'tons quentes',                   profile: 'casual',   slot: 'q2-casual' },
+        { label: 'Marrom & couro',     tiny: 'clássico quente',                profile: 'classico', slot: 'q2-classico2' },
       ],
     },
     {
       q: 'Que relógio você usaria todo dia?',
       options: [
-        { label: 'Esportivo preto',   tiny: 'caixa escura, pulso urbano', profile: 'urbano',   slot: 'q3-urbano' },
-        { label: 'Aço com couro',     tiny: 'clássico de sempre', profile: 'classico', slot: 'q3-classico' },
-        { label: 'Minimalista claro', tiny: 'fino e discreto', profile: 'casual',   slot: 'q3-casual' },
-        { label: 'Aço polido',        tiny: 'presença elegante', profile: 'classico', slot: 'q3-classico2' },
+        { label: 'Esportivo preto',    tiny: 'caixa escura, pulso urbano',     profile: 'urbano',   slot: 'q3-urbano' },
+        { label: 'Aço com couro',      tiny: 'clássico de sempre',             profile: 'classico', slot: 'q3-classico' },
+        { label: 'Minimalista claro',  tiny: 'fino e discreto',                profile: 'casual',   slot: 'q3-casual' },
+        { label: 'Aço polido',         tiny: 'presença elegante',              profile: 'classico', slot: 'q3-classico2' },
       ],
     },
     {
       q: 'Seu calçado preferido é...',
       options: [
-        { label: 'Sneaker clean',     tiny: 'branco ou preto liso', profile: 'urbano',   slot: 'q4-urbano' },
-        { label: 'Sapato derby',      tiny: 'social de couro', profile: 'classico', slot: 'q4-classico' },
-        { label: 'Loafer / mocassim', tiny: 'casual elegante', profile: 'casual',   slot: 'q4-casual' },
-        { label: 'Bota casual',       tiny: 'couro pro dia a dia', profile: 'casual',   slot: 'q4-casual2' },
+        { label: 'Sneaker clean',      tiny: 'branco ou preto liso',           profile: 'urbano',   slot: 'q4-urbano' },
+        { label: 'Sapato derby',       tiny: 'social de couro',                profile: 'classico', slot: 'q4-classico' },
+        { label: 'Loafer / mocassim',  tiny: 'casual elegante',                profile: 'casual',   slot: 'q4-casual' },
+        { label: 'Bota casual',        tiny: 'couro pro dia a dia',            profile: 'casual',   slot: 'q4-casual2' },
       ],
     },
     {
       q: 'O que mais aparece na sua rotina?',
       options: [
-        { label: 'Eventos urbanos',   tiny: 'cidade, noite, social', profile: 'urbano',   slot: 'q5-urbano' },
-        { label: 'Reuniões e compromissos', tiny: 'trabalho formal', profile: 'classico', slot: 'q5-classico' },
-        { label: 'Dia a dia leve',    tiny: 'rotina descontraída', profile: 'casual',   slot: 'q5-casual' },
-        { label: 'Um pouco de tudo',  tiny: 'agenda variada', profile: 'casual',   slot: 'q5-casual2' },
+        { label: 'Eventos urbanos',        tiny: 'cidade, noite, social',      profile: 'urbano',   slot: 'q5-urbano' },
+        { label: 'Reuniões e compromissos', tiny: 'trabalho formal',           profile: 'classico', slot: 'q5-classico' },
+        { label: 'Dia a dia leve',         tiny: 'rotina descontraída',        profile: 'casual',   slot: 'q5-casual' },
+        { label: 'Um pouco de tudo',       tiny: 'agenda variada',             profile: 'casual',   slot: 'q5-casual2' },
       ],
     },
     {
       q: 'Seu estilo em uma palavra:',
       options: [
-        { label: 'Moderno',     tiny: 'atual, com atitude', profile: 'urbano',   slot: 'q6-urbano' },
-        { label: 'Elegante',    tiny: 'refinado, atemporal', profile: 'classico', slot: 'q6-classico' },
-        { label: 'Descomplicado', tiny: 'leve, sem esforço', profile: 'casual',   slot: 'q6-casual' },
-        { label: 'Versátil',    tiny: 'me adapto a tudo', profile: 'casual',   slot: 'q6-casual2' },
+        { label: 'Moderno',       tiny: 'atual, com atitude',                  profile: 'urbano',   slot: 'q6-urbano' },
+        { label: 'Elegante',      tiny: 'refinado, atemporal',                 profile: 'classico', slot: 'q6-classico' },
+        { label: 'Descomplicado', tiny: 'leve, sem esforço',                   profile: 'casual',   slot: 'q6-casual' },
+        { label: 'Versátil',      tiny: 'me adapto a tudo',                    profile: 'casual',   slot: 'q6-casual2' },
       ],
     },
   ];
@@ -609,13 +1052,15 @@
   /* ================================================================
      ESTADO
      ================================================================ */
-  let current = 0;                 // índice da pergunta atual
+  let current = 0;
   const counts = { urbano: 0, classico: 0, casual: 0 };
-  const answers = [];              // histórico de respostas
+  const answers = [];
   let lead = { name: '', email: '' };
-  const TIE_ORDER = ['urbano', 'classico', 'casual']; // desempate
-
-  const TOTAL_STEPS = QUESTIONS.length + 2; // perguntas + captura + resultado
+  let selectedProfile = null;
+  let kitAccepted = false;
+  let selectedUpgrades = new Set();      // índices dos upgrades marcados
+  const TIE_ORDER = ['urbano', 'classico', 'casual'];
+  const TOTAL_STEPS = QUESTIONS.length + 2;
 
   /* ================================================================
      HELPERS DE TELA
@@ -627,9 +1072,13 @@
   }
 
   function setProgress(stepIndex) {
-    // stepIndex de 0 (intro) a TOTAL_STEPS
     const pct = Math.min(100, Math.round((stepIndex / TOTAL_STEPS) * 100));
     document.getElementById('progressFill').style.width = pct + '%';
+  }
+
+  function fmt(v, currency) {
+    // formata 128 → "128,00 €" (padrão europeu)
+    return v.toFixed(2).replace('.', ',') + ' ' + currency;
   }
 
   /* ================================================================
@@ -645,17 +1094,16 @@
   /* ================================================================
      RENDER DE PERGUNTA
      ================================================================ */
-  function buildOption(opt, index) {
+  function buildOption(opt) {
     const btn = document.createElement('button');
     btn.className = 'option';
     btn.setAttribute('type', 'button');
     btn.setAttribute('aria-label', opt.label);
     btn.innerHTML = `
-      <!-- PLACEHOLDER: troque por <img src="..."> — slot: ${opt.slot} -->
       <div class="option-img" data-slot="${opt.slot}">Imagem<br>${opt.slot}</div>
       <span class="option-label">${opt.label}<span class="tiny">${opt.tiny}</span></span>
     `;
-    btn.addEventListener('click', () => pick(opt, index, btn));
+    btn.addEventListener('click', () => pick(opt, btn));
     return btn;
   }
 
@@ -667,7 +1115,7 @@
 
     const wrap = document.getElementById('qOptions');
     wrap.innerHTML = '';
-    Q.options.forEach((opt, i) => wrap.appendChild(buildOption(opt, i)));
+    Q.options.forEach(opt => wrap.appendChild(buildOption(opt)));
 
     document.getElementById('qValidation').classList.remove('show');
     setProgress(current + 1);
@@ -679,16 +1127,13 @@
     });
   }
 
-  function pick(opt, index, btnEl) {
-    // marca visual
+  function pick(opt, btnEl) {
     btnEl.parentNode.querySelectorAll('.option').forEach(o => o.classList.remove('picked'));
     btnEl.classList.add('picked');
 
-    // contabiliza
     counts[opt.profile]++;
     answers[current] = opt;
 
-    // microcopy de validação
     const pool = VALIDATION[opt.profile];
     const msg = pool[Math.floor(Math.random() * pool.length)];
     const v = document.getElementById('qValidation');
@@ -702,7 +1147,6 @@
       profile: opt.profile,
     });
 
-    // avança após um respiro pra ler a validação
     setTimeout(() => {
       current++;
       if (current < QUESTIONS.length) {
@@ -729,9 +1173,9 @@
   }
 
   document.getElementById('revealBtn').addEventListener('click', () => {
-    const nameEl = document.getElementById('nameInput');
+    const nameEl  = document.getElementById('nameInput');
     const emailEl = document.getElementById('emailInput');
-    const nameErr = document.getElementById('nameError');
+    const nameErr  = document.getElementById('nameError');
     const emailErr = document.getElementById('emailError');
 
     let ok = true;
@@ -743,31 +1187,30 @@
 
     if (!ok) return;
 
-    lead.name = nameEl.value.trim();
+    lead.name  = nameEl.value.trim();
     lead.email = emailEl.value.trim();
+    selectedProfile = resolveProfile();
 
     track('lead_submit', {
       quiz: 'zalcen_estilo',
-      profile: resolveProfile(),
-      // nome/email ficam disponíveis pro GTM/Brevo via dataLayer:
+      profile: selectedProfile,
       lead_name: lead.name,
       lead_email: lead.email,
     });
 
-    // -------- INTEGRAÇÃO BREVO (a fazer) ---------------------------
-    // Aqui entra a chamada à API do Brevo pra criar o contato e
-    // disparar o Funil de aquecimento. Por enquanto só registramos.
-    // submitToBrevo(lead, resolveProfile());
-    // ---------------------------------------------------------------
+    // -------- INTEGRAÇÃO BREVO (a fazer) ------------------------------
+    // Aqui entra a chamada à API do Brevo pra criar o contato e disparar
+    // o Funil de aquecimento. Por enquanto só registramos no dataLayer.
+    // submitToBrevo(lead, selectedProfile);
+    // ------------------------------------------------------------------
 
     showResult();
   });
 
   /* ================================================================
-     RESULTADO
+     RESULTADO + KIT HERÓI
      ================================================================ */
   function resolveProfile() {
-    // resposta dominante; desempate por TIE_ORDER
     let best = TIE_ORDER[0];
     let max = -1;
     TIE_ORDER.forEach(p => {
@@ -777,16 +1220,55 @@
   }
 
   function showResult() {
-    const key = resolveProfile();
+    const key = selectedProfile;
     const p = PROFILES[key];
 
+    // Cabeçalho
     document.getElementById('resultName').textContent = `${lead.name}, seu estilo é:`;
     document.getElementById('resultProfile').innerHTML = `<em>${p.name}</em>`;
-    document.getElementById('resultDesc').textContent = p.desc;
-    document.getElementById('deliverableTitle').textContent = `Seu Guia ${p.name}`;
 
-    document.getElementById('stepLabel').textContent = 'Resultado';
+    // Narrativa (3 blocos)
+    document.getElementById('narrative').innerHTML = `
+      <div class="narr-block">
+        <h3>O que esse estilo diz sobre você</h3>
+        <p>${p.narrative.essence}</p>
+      </div>
+      <div class="narr-block">
+        <h3>O erro comum de quem tem esse perfil</h3>
+        <p>${p.narrative.problem}</p>
+      </div>
+      <div class="narr-block">
+        <h3>Por que preparamos um kit pra você</h3>
+        <p>${p.narrative.solution}</p>
+      </div>
+    `;
+
+    // Kit
+    document.getElementById('kitBadge').textContent = p.kit.badge;
+    document.getElementById('kitName').textContent = p.kit.title;
+
+    const kitItemsEl = document.getElementById('kitItems');
+    kitItemsEl.innerHTML = '';
+    p.kit.items.forEach(it => {
+      const el = document.createElement('div');
+      el.className = 'kit-item';
+      el.innerHTML = `
+        <div class="thumb" data-slot="${it.thumb}">${it.thumb}</div>
+        <div class="name">${it.name}</div>
+      `;
+      kitItemsEl.appendChild(el);
+    });
+
+    const savings = p.kit.priceFull - p.kit.priceKit;
+    const pctSaved = Math.round((savings / p.kit.priceFull) * 100);
+    document.getElementById('kitOld').textContent  = fmt(p.kit.priceFull, p.kit.currency);
+    document.getElementById('kitNew').textContent  = fmt(p.kit.priceKit,  p.kit.currency);
+    document.getElementById('kitSave').textContent = `Você economiza ${fmt(savings, p.kit.currency)} (${pctSaved}%)`;
+
+    // Progresso e visual
+    document.getElementById('stepLabel').textContent = 'Seu resultado';
     setProgress(TOTAL_STEPS);
+    document.getElementById('stage').classList.add('wide');
     show('screen-result');
     startTimer();
 
@@ -796,25 +1278,162 @@
       profile_name: p.name,
       counts: Object.assign({}, counts),
     });
+    track('kit_shown', { quiz: 'zalcen_estilo', profile: key, kit: p.kit.title });
   }
 
-  document.getElementById('shopBtn').addEventListener('click', () => {
-    const key = resolveProfile();
-    track('cta_shop_click', { quiz: 'zalcen_estilo', profile: key });
-    // CTA vai pra página do perfil certo na Zalcen (ajuste as URLs):
-    const urls = {
-      urbano:   'https://zalcen.com/collections/urbano',
-      classico: 'https://zalcen.com/collections/classico',
-      casual:   'https://zalcen.com/collections/casual',
-    };
-    window.location.href = urls[key];
+  /* ================================================================
+     ACEITAR O KIT → expande upgrades
+     ================================================================ */
+  document.getElementById('acceptKitBtn').addEventListener('click', () => {
+    if (kitAccepted) return;
+    kitAccepted = true;
+
+    const p = PROFILES[selectedProfile];
+    document.getElementById('kitHero').classList.add('accepted');
+
+    // Muda o texto do botão do kit pra confirmação
+    const btn = document.getElementById('acceptKitBtn');
+    btn.innerHTML = '✓ Kit adicionado';
+    btn.style.background = 'transparent';
+    btn.style.color = 'var(--brass)';
+    btn.style.border = '1px solid var(--brass)';
+    btn.disabled = true;
+    btn.style.opacity = '1';
+
+    // Renderiza upgrades
+    renderUpgrades(p);
+
+    // Expande visualmente
+    document.getElementById('upgrades').classList.add('open');
+    document.getElementById('progressWrap').classList.add('hidden');
+    document.getElementById('stepLabel').textContent = 'Personalizando';
+
+    // Recalcula total (só kit por enquanto)
+    recalcTotal();
+
+    // Scroll suave até os upgrades
+    setTimeout(() => {
+      document.getElementById('upgrades').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 200);
+
+    track('kit_accepted', {
+      quiz: 'zalcen_estilo',
+      profile: selectedProfile,
+      kit_price: p.kit.priceKit,
+    });
   });
 
   /* ================================================================
-     TIMER REAL — expira uma vez, não reinicia (decisão sua)
+     UPGRADES
+     ================================================================ */
+  function renderUpgrades(p) {
+    const list = document.getElementById('upgradesList');
+    list.innerHTML = '';
+    p.upgrades.forEach((u, idx) => {
+      const pct = Math.round(((u.priceFull - u.priceUpg) / u.priceFull) * 100);
+      const card = document.createElement('div');
+      card.className = 'upgrade-card';
+      card.setAttribute('data-idx', idx);
+      card.innerHTML = `
+        <div class="thumb" data-slot="${u.thumb}">${u.thumb}</div>
+        <div class="upgrade-info">
+          <div class="name">${u.name}</div>
+          <span class="discount">${pct}% off exclusivo</span>
+          <div class="price">
+            <span class="old">${fmt(u.priceFull, p.kit.currency)}</span>
+            <span class="new">${fmt(u.priceUpg, p.kit.currency)}</span>
+          </div>
+        </div>
+        <div class="upgrade-check"></div>
+      `;
+      card.addEventListener('click', () => toggleUpgrade(idx, card));
+      list.appendChild(card);
+    });
+  }
+
+  function toggleUpgrade(idx, cardEl) {
+    if (selectedUpgrades.has(idx)) {
+      selectedUpgrades.delete(idx);
+      cardEl.classList.remove('selected');
+    } else {
+      selectedUpgrades.add(idx);
+      cardEl.classList.add('selected');
+    }
+    recalcTotal();
+
+    const p = PROFILES[selectedProfile];
+    track('upgrade_toggle', {
+      quiz: 'zalcen_estilo',
+      profile: selectedProfile,
+      upgrade_index: idx,
+      upgrade_name: p.upgrades[idx].name,
+      selected: selectedUpgrades.has(idx),
+      selected_count: selectedUpgrades.size,
+    });
+  }
+
+  function recalcTotal() {
+    const p = PROFILES[selectedProfile];
+    const kitPrice = p.kit.priceKit;
+
+    let upgradesFull = 0;
+    let upgradesNow  = 0;
+    selectedUpgrades.forEach(idx => {
+      upgradesFull += p.upgrades[idx].priceFull;
+      upgradesNow  += p.upgrades[idx].priceUpg;
+    });
+
+    const total    = kitPrice + upgradesNow;
+    const totalFull = p.kit.priceFull + upgradesFull;
+    const savings  = totalFull - total;
+
+    document.getElementById('totalKit').textContent = fmt(kitPrice, p.kit.currency);
+    document.getElementById('totalUpgrades').textContent = fmt(upgradesNow, p.kit.currency);
+    document.getElementById('totalUpgradesRow').style.display = selectedUpgrades.size > 0 ? 'flex' : 'none';
+    document.getElementById('totalFinal').textContent = fmt(total, p.kit.currency);
+    document.getElementById('totalSavings').textContent = fmt(savings, p.kit.currency);
+  }
+
+  /* ================================================================
+     FINALIZAR → carrinho da Shopify
+     ================================================================ */
+  document.getElementById('checkoutBtn').addEventListener('click', () => {
+    const p = PROFILES[selectedProfile];
+
+    // Monta lista de variant IDs
+    const parts = p.kit.items.map(it => `${it.variantId}:1`);
+    selectedUpgrades.forEach(idx => {
+      parts.push(`${p.upgrades[idx].variantId}:1`);
+    });
+
+    const url = `https://zalcen.com/cart/${parts.join(',')}`;
+
+    track('checkout_start', {
+      quiz: 'zalcen_estilo',
+      profile: selectedProfile,
+      items_count: parts.length,
+      upgrades_selected: selectedUpgrades.size,
+      cart_url: url,
+    });
+
+    // Pequeno delay pro tracking bater antes do redirect
+    setTimeout(() => { window.location.href = url; }, 120);
+  });
+
+  /* ================================================================
+     SAÍDA DISCRETA — explorar a coleção
+     ================================================================ */
+  document.getElementById('exploreBtn').addEventListener('click', () => {
+    const p = PROFILES[selectedProfile];
+    track('cta_explore_collection', { quiz: 'zalcen_estilo', profile: selectedProfile });
+    setTimeout(() => { window.location.href = p.collectionUrl; }, 120);
+  });
+
+  /* ================================================================
+     TIMER — 10 min, expira uma vez (não reinicia)
      ================================================================ */
   function startTimer() {
-    let remaining = 10 * 60; // 10 minutos
+    let remaining = 10 * 60;
     const clock = document.getElementById('clock');
     const timer = document.getElementById('timer');
 
@@ -826,14 +1445,14 @@
       if (remaining <= 0) {
         clearInterval(tick);
         timer.classList.add('expired');
-        timer.querySelector('span').textContent = '⏳ Oferta de boas-vindas expirada';
+        timer.querySelector('span').textContent = '⏳ Oferta expirada';
         clock.textContent = '00:00';
-        track('offer_timer_expired', { quiz: 'zalcen_estilo' });
+        track('offer_timer_expired', { quiz: 'zalcen_estilo', profile: selectedProfile });
       }
     }, 1000);
   }
 
-  // pageview inicial
+  // Pageview inicial
   track('quiz_landing_view', { quiz: 'zalcen_estilo' });
 </script>
 </body>
